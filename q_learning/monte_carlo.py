@@ -1,7 +1,7 @@
 import gym
 import numpy as np
 
-from utils import digitize_state
+from .utils import digitize_state
 
 
 class MonteCarloAgent:

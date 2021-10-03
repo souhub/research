@@ -4,7 +4,7 @@ import pytest
 
 @pytest.fixture
 def agent():
-    return MonteCarloAgent()
+    return MonteCarloAgent(gamma=0.99, alpha=0.2)
 
 
 def test_policy(agent):

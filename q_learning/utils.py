@@ -1,4 +1,3 @@
-import gym
 import numpy as np
 
 
@@ -17,6 +16,6 @@ def digitize_state(observation):
     return sum([x * (num_dizitized**i) for i, x in enumerate(digitized)])
 
 
-if __name__ == '__main__':
-    d = bins(-1.2, 6, 10)
-    print(d, len(d))
+# if __name__ == '__main__':
+#     d = bins(-1.2, 6, 10)
+#     print(d, len(d))
