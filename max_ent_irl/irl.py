@@ -49,8 +49,6 @@ class MaxEntIRL:
         R = Reward(self.env.observation_space.n, self.alpha)
 
         for e in range(epoch):
-            # Compute a new reward function using θ.
-
             # Compute a new policy using the reward function.
             self.R = R()
             V, policy = self.planner.plan()
