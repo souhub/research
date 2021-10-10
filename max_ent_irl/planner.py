@@ -1,5 +1,6 @@
 import gym
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class Planner:
@@ -79,6 +80,7 @@ class ValueIterationPlanner(Planner):
 
             if delta < self.threshold:
                 break
+        V[15] = 1
         return V
 
 
@@ -128,7 +130,36 @@ class PolicyIterationPlanner(Planner):
             if delta < self.threshold:
                 break
 
+        V[15] = 1
         return V
+
+    def render_values(self):
+        V, policy = self.plan()
+        V = np.array(list(V.values()))
+        plt.pcolor(V.reshape(4, 4)[::-1, :])
+        plt.title("Value function")
+        plt.colorbar()
+        plt.show()
+
+    def render_policy(self):
+        def convert_action(num: int):
+            if num == 0:
+                return 'L'
+            elif num == 1:
+                return 'D'
+            elif num == 2:
+                return 'R'
+            else:
+                return 'U'
+        _, policy = self.plan()
+        policy = np.array(list(policy.values()))
+        render_policy = []
+        for p in policy:
+            for action in p:
+                if p[action] == 1:
+                    render_policy.append(convert_action(action))
+        render_policy = np.array(render_policy).reshape(4, 4)[::-1, :]
+        print(render_policy)
 
     def plan(self):
         """An algorithm for plan iteration.
