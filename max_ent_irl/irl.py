@@ -29,12 +29,13 @@ class MaxEntIRL:
         alpha: A learning rate.
     """
 
-    def __init__(self, env: gym.Env, alpha: float) -> None:
+    def __init__(self, env: gym.Env, alpha: float, epoch: int) -> None:
         self.env = env
         self.planner = PolicyIterationPlanner(self.env)
         self.alpha = alpha
+        self.epoch = epoch
 
-    def irl(self, trajectories: np.ndarray, epoch: int = 100):
+    def irl(self, trajectories: np.ndarray):
         """An algorithm for the maximum entropy IRL.
 
         Compute the reward function given the expert's trajectories using the maximum entropy IRL algorithm proposed in the paper by Ziebart et al. (2008).
@@ -48,7 +49,7 @@ class MaxEntIRL:
         expert_features = self.compute_expert_features(trajectories)
         R = Reward(self.env.observation_space.n, self.alpha)
 
-        for e in range(epoch):
+        for e in range(self.epoch):
             # Compute a new policy using the reward function.
             self.R = R()
             V, policy = self.planner.plan()
