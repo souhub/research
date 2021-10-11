@@ -234,6 +234,6 @@ class PolicyIterationPlanner(Planner):
                 trajectories.append(trajectory)
                 if len(trajectories) % 5 == 0:
                     print(
-                        '    {}/{} has benn completed...'.format(len(trajectories), n_samples))
+                        '    {}/{} trajectories have benn collected...'.format(len(trajectories), n_samples))
 
         return np.array(trajectories)
