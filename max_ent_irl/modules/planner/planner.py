@@ -40,7 +40,8 @@ class Planner:
             A dict mapping actions to acction values.
             examples:
 
-            {0: 0.39556574140843165, 1: 0.6390163154732553, 2: 0.6149209118442326, 3: 0.5371942554993754}
+            {0: 0.39556574140843165, 1: 0.6390163154732553,
+                2: 0.6149209118442326, 3: 0.5371942554993754}
         """
         Q = {}
 
@@ -100,10 +101,10 @@ class PolicyIterationPlanner(Planner):
         """
         super().initialize()
         self.policy = {}
-        for s in range(self.env.nS):
+        for s in range(self.env.observation_space.n):
             self.policy[s] = {}
-            for a in range(self.env.nA):
-                self.policy[s][a] = 1/self.env.nA
+            for a in range(self.env.action_space.n):
+                self.policy[s][a] = 1/self.env.action_space.n
 
     def compute_state_values(self):
         """Compute state values.
@@ -112,15 +113,16 @@ class PolicyIterationPlanner(Planner):
             V: A map of state values.
         """
         V = {}
-        for s in range(self.env.nS):
+        for s in range(self.env.observation_space.n):
             V[s] = 0
-
+        i = 0
         while True:
             delta = 0
             for s in V:
                 value = 0
                 expected_action_values = self.compute_action_values(
                     s, V)
+
                 action_probs = self.policy[s]
                 for (action_prob, action_value) in zip(action_probs.values(), expected_action_values.values()):
                     value += action_prob*action_value
@@ -130,7 +132,7 @@ class PolicyIterationPlanner(Planner):
             if delta < self.threshold:
                 break
 
-        V[15] = 1
+        # V[15] = 1
         return V
 
     def render_values(self):
@@ -140,26 +142,6 @@ class PolicyIterationPlanner(Planner):
         plt.title("Value function")
         plt.colorbar()
         plt.show()
-
-    def render_policy(self):
-        def convert_action(num: int):
-            if num == 0:
-                return 'L'
-            elif num == 1:
-                return 'D'
-            elif num == 2:
-                return 'R'
-            else:
-                return 'U'
-        _, policy = self.plan()
-        policy = np.array(list(policy.values()))
-        render_policy = []
-        for p in policy:
-            for action in p:
-                if p[action] == 1:
-                    render_policy.append(convert_action(action))
-        render_policy = np.array(render_policy).reshape(4, 4)[::-1, :]
-        print(render_policy)
 
     def plan(self):
         """An algorithm for plan iteration.
@@ -181,7 +163,7 @@ class PolicyIterationPlanner(Planner):
                     update_stable = False
 
                 # Update the policy
-                for action in range(self.env.nA):
+                for action in range(self.env.action_space.n):
                     prob = 1 if action == best_action else 0
                     self.policy[s][action] = prob
 

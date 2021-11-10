@@ -1,7 +1,8 @@
 import numpy as np
 import gym
 
-from planner import PolicyIterationPlanner
+from ..planner.planner import PolicyIterationPlanner
+from ..q_learning.monte_carlo2 import MonteCarloAgent
 
 
 class Reward:
@@ -18,7 +19,11 @@ class Reward:
         return np.dot(self.theta.T, self.features)
 
     def learn(self, grad):
-        self.theta = (1-self.alpha)*self.theta+self.alpha*grad
+        # self.theta = (1-self.alpha)*self.theta+np.exp(self.alpha*grad)
+        # self.theta += np.exp(self.alpha*grad)
+        self.theta += self.alpha*grad
+        # Normalization
+        self.theta /= self.theta.sum()
 
 
 class MaxEntIRL:
@@ -29,11 +34,13 @@ class MaxEntIRL:
         alpha: A learning rate.
     """
 
-    def __init__(self, env: gym.Env, alpha: float, epoch: int) -> None:
+    def __init__(self, env: gym.Env, alpha: float, epoch: int, rl_algorithm: str) -> None:
         self.env = env
+        self.monte_carlo_agent = MonteCarloAgent(self.env, alpha)
         self.planner = PolicyIterationPlanner(self.env)
         self.alpha = alpha
         self.epoch = epoch
+        self.rl_algorithm = rl_algorithm
 
     def irl(self, trajectories: np.ndarray):
         """An algorithm for the maximum entropy IRL.
@@ -50,9 +57,13 @@ class MaxEntIRL:
         R = Reward(self.env.observation_space.n, self.alpha)
 
         for e in range(self.epoch):
+
             # Compute a new policy using the reward function.
-            self.R = R()
-            V, policy = self.planner.plan()
+            if self.rl_algorithm == 'planner':
+                self.planner.R = R()
+                V, policy = self.planner.plan()
+            elif self.rl_algorithm == 'q_learning':
+                policy = self.monte_carlo_agent.learn(R())
 
             # Compute a SVF using the policy.
             P = self.compute_svf(trajectories, policy)
@@ -66,20 +77,16 @@ class MaxEntIRL:
         """
         """
         features = np.zeros(self.env.observation_space.n)
-        for t in trajectories:
-            for s in t:
+        for traj in trajectories:
+            for s in traj:
                 features[s] += 1
-
         features /= len(trajectories)
         return features
 
     def compute_svf(self, trajectories: np.ndarray, policy) -> np.ndarray:
         """
         """
-        try:
-            n_trajectories, n_steps = trajectories.shape
-        except:
-            print(trajectories)
+        n_trajectories, n_steps = trajectories.shape
         svf = np.zeros((n_steps, self.env.observation_space.n))
 
         for trajectory in trajectories:

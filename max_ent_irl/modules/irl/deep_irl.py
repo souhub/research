@@ -1,6 +1,6 @@
-import chainer
-from irl import MaxEntIRL
+from .irl import MaxEntIRL
 
+import chainer
 from chainer import Chain
 from chainer.optimizer import WeightDecay, GradientClipping
 import numpy as np
@@ -8,7 +8,6 @@ import chainer.links as L
 import chainer.functions as F
 from chainer import optimizers
 import gym
-from chainer.optimizers import ada_grad
 
 
 class Reward(Chain):
@@ -46,7 +45,7 @@ class MaxEntDeepIRL(MaxEntIRL):
         for e in range(self.epoch):
             reward_func.zerograds()
             r = reward_func(x)
-            self.R = r
+            self.planner.R = r
             V, policy = self.planner.plan()
             # Compute a SVF using the policy.
             svf = self.compute_svf(trajectories, policy)
