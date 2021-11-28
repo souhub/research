@@ -74,8 +74,32 @@ class LogisticCurve(gym.Env):
             P[s] = ps
         return P
 
-    def _reset(self):
+    def reset(self):
         return np.random.randint(0, self.action_space.n)
+
+    def step(self, action, state):
+        if action <= self.action_space.n/2:
+            desired_next_state = state+action
+        else:
+            desired_next_state = state-action
+
+        next_states = list(range(int(state-self.action_space.n/2),
+                                 int(state+self.action_space.n/2)+1))
+        desired_prob = self.params.desired_prob
+
+        if np.random.uniform() < desired_prob:
+            next_state = desired_next_state
+        else:
+            next_state = np.random.choice(next_states)
+
+        done = bool(
+            self.goal_state <= next_state or next_state < 0)
+        if done:
+            next_state = state
+
+        reward = None
+        info = None
+        return next_state, reward, done, info
 
 
 class SimpleLogisticCurve(gym.Env):
@@ -207,7 +231,6 @@ class Render:
         ax = fig.add_subplot(1, 1, 1)
         ax.set_xlabel('x (Biomass)')
         ax.set_ylabel('dx/dt')
-        # delta = {s: [] for s in range(self.params.n_digitize)}
 
         S = np.array([s for s in range(self.params.n_digitize)])
         x = []
@@ -218,25 +241,12 @@ class Render:
             r_t_probs = r_t/sum(r_t)
             r_next_t_probs = r_next_t/sum(r_next_t)
             s_t = np.argmax(r_t)
-            # s_next_t = np.argmax(r_next_t)
             # r(s)を確率分布として考え、確率✕x(s)をs_tとすることで離散化の影響を小さくする
-            # s_t_detailed = float(np.dot(S, r_t))
             s_t_detailed = float(np.dot(S, r_t_probs))
-            # s_next_t_detailed = float(np.dot(S, r_next_t))
             s_next_t_detailed = float(np.dot(S, r_next_t_probs))
             s_delta = s_next_t_detailed-s_t_detailed
-            # delta[s_t].append(s_delta)
             y.append(s_delta)
             x.append(s_t_detailed)
-        # x = []
-        # y = []
-        # for k, v in delta.items():
-        #     if v == []:
-        #         continue
-        #     x_i = int(k)
-        #     y_i = sum(v)/len(v)
-        #     x.append(x_i)
-        #     y.append(y_i)
         ax.scatter(x, y, label="Relationships between x and dx/dt")
         plt.legend()
         self.__set_title()
@@ -259,8 +269,6 @@ class Render:
         y = [y_i*size_ratio for y_i in y]
         ax.scatter(x, y,
                    label="Relationships between x and dx/dt")
-        # ax.plot(x, y,
-        #         label="Relationships between x and dx/dt")
         x_answer = np.linspace(0, 1000, 1001)
         y_answer = 0.2*(1-x_answer/1000)*x_answer
         ax.plot(x_answer, y_answer, label="Answer", color="red")

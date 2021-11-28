@@ -5,7 +5,6 @@ import pandas as pd
 class DataProcessor:
     def digitize(self, data: np.ndarray, n_digitize: int) -> np.ndarray:
         max_element = np.amax(data)
-        # min_element = np.amin(data)
         min_element = 0
         bins = np.linspace(min_element, max_element, n_digitize-1)
         digitized_data = np.digitize(data, bins=bins)
