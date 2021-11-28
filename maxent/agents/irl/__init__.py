@@ -1,0 +1,2 @@
+from .maxent import MaxEntAgent
+from .maxent_with_multiple_actions import MaxEntWithMultipleActionsAgent
